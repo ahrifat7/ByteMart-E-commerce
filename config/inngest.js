@@ -15,7 +15,7 @@ export const syncUserCreation = inngest.createFunction(
     const userData = {
       _id: id,
       email: email_addresses[0].email_address,
-      name: first_name + ' ' + last_name,
+      name: `${first_name} ${last_name}`,
       imageUrl: image_url
     }
     await connectDB()
@@ -34,13 +34,14 @@ export const syncUserUpdation = inngest.createFunction(
     const userData = {
       _id: id,
       email: email_addresses[0].email_address,
-      name: first_name + ' ' + last_name,
+      name: `${first_name} ${last_name}`,
       imageUrl: image_url
     }
     await connectDB()
     await User.findByIdAndUpdate(id, userData)
   }
 )
+
 
 // Inngest Function to delete user from database
 export const syncUserDeletion = inngest.createFunction(
