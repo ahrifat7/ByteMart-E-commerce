@@ -1,5 +1,8 @@
+"use client"
 import React, { useState } from "react";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
+import { Mail, ArrowRight } from "lucide-react";
 
 const NewsLetter = () => {
   const [loading, setLoading] = useState(false);
@@ -32,34 +35,65 @@ const NewsLetter = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center text-center space-y-2 pt-8 pb-14">
-      <h1 className="md:text-4xl text-2xl font-semibold text-foreground">
-        Subscribe now & get 20% off
-      </h1>
-      <p className="md:text-base text-gray-600 dark:text-gray-400 pb-8">
-        Subscribe to our newsletter and stay updated with the latest trends and offers.
-      </p>
-      <form 
-        onSubmit={onSubmit}
-        className="flex items-center justify-between max-w-2xl w-full md:h-14 h-12 shadow-md dark:shadow-gray-900/50 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors"
-      >
-        <input
-          name="Email"
-          className="bg-transparent outline-none w-full px-6 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-600"
-          type="email"
-          required
-          placeholder="Enter your email id"
-        />
-        <button 
-          type="submit"
-          disabled={loading}
-          className={`md:px-12 px-8 h-full text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 transition-all font-semibold shadow-md shadow-orange-500/30 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+    <motion.section
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="relative overflow-hidden rounded-[2rem] bg-gradient-to-b from-background via-background/80 to-background border border-border/50 shadow-2xl p-8 md:p-14 mb-10"
+    >
+      {/* Decorative Glow */}
+      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/10 rounded-full blur-[120px] pointer-events-none translate-x-1/3 -translate-y-1/3" />
+      <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-blue-500/10 rounded-full blur-[100px] pointer-events-none -translate-x-1/3 translate-y-1/3" />
+
+      <div className="relative z-10 flex flex-col items-center text-center max-w-2xl mx-auto space-y-6">
+        <motion.div 
+          whileHover={{ scale: 1.05 }}
+          className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl flex items-center justify-center mb-1 shadow-inner border border-primary/20"
         >
-          {loading ? 'Subscribing...' : 'Subscribe'}
-        </button>
-      </form>
-    </div>
+          <Mail className="w-7 h-7 text-primary" />
+        </motion.div>
+        
+        <h2 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">
+          Get <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">20% Off</span> Your First Order
+        </h2>
+        <p className="text-foreground/60 max-w-md text-sm md:text-base leading-relaxed">
+          Join our newsletter for exclusive deals, product launches, and the latest tech trends — straight to your inbox.
+        </p>
+
+        <form 
+          onSubmit={onSubmit}
+          className="flex items-center w-full max-w-md mt-6 bg-background/60 backdrop-blur-xl border border-border/60 rounded-full overflow-hidden shadow-lg shadow-black/5 focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary/50 transition-all duration-300 relative group"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+          <input
+            name="Email"
+            className="bg-transparent outline-none flex-1 px-6 py-3.5 text-foreground placeholder-foreground/40 text-sm font-medium z-10 w-full"
+            type="email"
+            required
+            placeholder="Enter your email address"
+          />
+          <button 
+            type="submit"
+            disabled={loading}
+            className={`px-6 py-3.5 m-1 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm rounded-full flex items-center gap-2 transition-all shadow-md z-10 ${loading ? 'opacity-70 scale-95' : 'hover:scale-[1.02] active:scale-95'}`}
+          >
+            {loading ? (
+              <span className="text-xs">Joining...</span>
+            ) : (
+              <>
+                <span className="hidden md:inline">Subscribe</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
+          </button>
+        </form>
+
+        <p className="text-xs text-foreground/40 font-medium">No spam, ever. Unsubscribe anytime.</p>
+      </div>
+    </motion.section>
   );
 };
 
 export default NewsLetter;
+

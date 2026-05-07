@@ -1,13 +1,14 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { useAppContext } from "@/context/AppContext";
-import { MessageCircle, Bot, X, Minus, Send, Smile } from "lucide-react";
+import { MessageCircle, Bot, X, Send, Smile, ArrowRight } from "lucide-react";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import { chatbotResponses } from "@/lib/help-data";
 
 const ChatBot = () => {
     const context = useAppContext();
 
-    // If context is not available yet, don't render the chatbot to prevent crashes
     if (!context) {
         return null;
     }
@@ -15,7 +16,7 @@ const ChatBot = () => {
     const { products, currency, router } = context;
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
-        { role: "bot", text: "Hi there! 👋 I'm ByteBot, your personal shopping assistant. I can help you find products, track orders, or show you our latest 40% OFF deals! How can I help you today?" }
+        { role: "bot", text: chatbotResponses.greetings[0] }
     ]);
     const [input, setInput] = useState("");
     const [isTyping, setIsTyping] = useState(false);
@@ -42,7 +43,6 @@ const ChatBot = () => {
         setInput("");
         setIsTyping(true);
 
-        // Simulate AI Thinking
         setTimeout(() => {
             const botResponse = generateResponse(userMessage);
             setMessages(prev => [...prev, { role: "bot", ...botResponse }]);
@@ -53,7 +53,35 @@ const ChatBot = () => {
     const generateResponse = (query) => {
         const q = query.toLowerCase().trim();
 
-        // 1. Specific Promotion Checks (As requested by user)
+        // Check structured help topics
+        for (const topic of chatbotResponses.topics) {
+            if (topic.keywords.some(keyword => q.includes(keyword))) {
+                return { text: topic.response };
+            }
+        }
+
+        // Support / Help Center
+        if (q.includes("support") || q.includes("help") || q.includes("documentation") || q.includes("guide")) {
+            return { 
+                text: "You can find all our guides and documentation in the Help Center. Would you like to go there?",
+                action: { label: "Visit Help Center", path: "/support" }
+            };
+        }
+
+        // CEO / Founder Info
+        if (q.includes("ceo") || q.includes("founder") || q.includes("owner") || q.includes("who started") || q.includes("halim")) {
+            return { 
+                text: "ByteMart was founded by Md. Abdul Halim, a visionary leader and technology enthusiast. He started the company with a mission to make cutting-edge technology accessible to everyone! 🚀" 
+            };
+        }
+
+        // Contact Info
+        if (q.includes("contact") || q.includes("email") || q.includes("phone") || q.includes("call") || q.includes("address") || q.includes("location") || q.includes("reach") || q.includes("whatsapp")) {
+            return { 
+                text: "You can reach us through multiple channels:\n\n📧 Email: ahrifat141@gmail.com\n📞 Phone: +880 1602 541 452\n💬 WhatsApp: +880 1602 541 452\n📍 Location: Dhaka, Bangladesh\n\nOr use our Contact Us page for a direct message!" 
+            };
+        }
+
         if (q.includes("deal") || q.includes("offer") || q.includes("sale") || q.includes("best deals")) {
             const promoProducts = products.filter(p => 
                 p.name.toLowerCase().includes("macbook") || 
@@ -66,7 +94,6 @@ const ChatBot = () => {
             };
         }
 
-        // 2. Earphones / Audio Category Check
         if (q.includes("earphone") || q.includes("headphone") || q.includes("airpod") || q.includes("buds") || q.includes("audio")) {
             const audioProducts = products.filter(p => 
                 p.category.toLowerCase().includes("earphone") || 
@@ -83,7 +110,6 @@ const ChatBot = () => {
             }
         }
 
-        // 3. Laptop / Computer Check
         if (q.includes("laptop") || q.includes("macbook") || q.includes("computer") || q.includes("asus") || q.includes("rog")) {
              const laptops = products.filter(p => 
                 p.category.toLowerCase().includes("laptop") || 
@@ -99,39 +125,6 @@ const ChatBot = () => {
             }
         }
 
-        // 4. Watch / Smartwatch Check
-        if (q.includes("watch") || q.includes("smartwatch") || q.includes("garmin") || q.includes("ultra")) {
-            const watches = products.filter(p => 
-                p.category.toLowerCase().includes("watch") || 
-                p.name.toLowerCase().includes("watch")
-            ).slice(0, 3);
-
-            if (watches.length > 0) {
-                return {
-                    text: "Looking for a smartwatch? We have everything from high-performance Garmin watches to the Apple Watch Ultra:",
-                    products: watches
-                };
-            }
-        }
-
-        // 5. Keyboard / Mouse / PC Accessories Check
-        if (q.includes("keyboard") || q.includes("mouse") || q.includes("logitech") || q.includes("razer")) {
-            const peripherals = products.filter(p => 
-                p.category.toLowerCase().includes("keyboard") || 
-                p.category.toLowerCase().includes("mouse") ||
-                p.name.toLowerCase().includes("keyboard") ||
-                p.name.toLowerCase().includes("mouse")
-            ).slice(0, 4);
-
-            if (peripherals.length > 0) {
-                return {
-                    text: "Upgrade your setup with our premium peripherals! We have high-performance gaming keyboards and mice from Razer, Logitech, and more:",
-                    products: peripherals
-                };
-            }
-        }
-
-        // 6. Generic Product Search (More Robust)
         const cleanQuery = q.replace(/find|search|show me|looking for|buy|want to|me|some|any|a|the/g, "").trim();
         if (cleanQuery.length > 1) {
             const terms = cleanQuery.split(/\s+/).filter(t => t.length > 2);
@@ -140,10 +133,7 @@ const ChatBot = () => {
                 const category = p.category.toLowerCase();
                 const brand = p.brand?.toLowerCase() || "";
                 
-                // If it's a direct match with category or name
                 if (name.includes(cleanQuery) || category.includes(cleanQuery) || cleanQuery.includes(category)) return true;
-                
-                // If any significant term matches
                 return terms.some(term => name.includes(term) || brand.includes(term) || category.includes(term));
             }).slice(0, 4);
 
@@ -155,23 +145,11 @@ const ChatBot = () => {
             }
         }
 
-        // 7. Shipping/Delivery
-        if (q.includes("shipping") || q.includes("delivery") || q.includes("arrive") || q.includes("track")) {
-            return { text: "We offer fast worldwide shipping! Most orders arrive within 3-5 business days. You can track your order in the 'My Orders' section after logging in." };
+        if (q.includes("hello") || q.includes("hi") || q.includes("hey")) {
+            return { text: "Hello! 👋 I'm ByteBot. I can help you find the best tech deals, track your order, or answer questions. What can I do for you?" };
         }
 
-        // 8. Returns/Refunds
-        if (q.includes("return") || q.includes("refund") || q.includes("exchange")) {
-            return { text: "We have a 30-day hassle-free return policy. If you're not satisfied, you can initiate a return from your dashboard." };
-        }
-
-        // 9. Greetings
-        if (q.includes("hello") || q.includes("hi") || q.includes("hey") || q.includes("morning") || q.includes("evening")) {
-            return { text: "Hello! 👋 I'm ByteBot. I can help you find the best tech deals, track your order, or answer questions about our products. What can I do for you today?" };
-        }
-
-        // Default
-        return { text: "I'm not sure I understand exactly. I can help you find products (like 'earphones' or 'laptops'), check shipping times, or show you our best deals. What would you like to know?" };
+        return { text: chatbotResponses.fallback };
     };
 
     const handleMouseDown = (e) => {
@@ -180,191 +158,225 @@ const ChatBot = () => {
         setScrollLeft(quickActionsRef.current.scrollLeft);
     };
 
-    const handleMouseLeave = () => {
-        setIsDragging(false);
-    };
-
-    const handleMouseUp = () => {
-        setIsDragging(false);
-    };
+    const handleMouseLeave = () => setIsDragging(false);
+    const handleMouseUp = () => setIsDragging(false);
 
     const handleMouseMove = (e) => {
         if (!isDragging) return;
         e.preventDefault();
         const x = e.pageX - quickActionsRef.current.offsetLeft;
-        const walk = (x - startX) * 2; // scroll-fast factor
+        const walk = (x - startX) * 2;
         quickActionsRef.current.scrollLeft = scrollLeft - walk;
     };
 
-    const handleWheel = (e) => {
-        if (quickActionsRef.current) {
-            // Scroll horizontally
-            quickActionsRef.current.scrollLeft += e.deltaY;
+    useEffect(() => {
+        const el = quickActionsRef.current;
+        if (el && isOpen) {
+            const onWheel = (e) => {
+                if (e.deltaY !== 0) {
+                    e.preventDefault();
+                    el.scrollLeft += e.deltaY;
+                }
+            };
+            el.addEventListener("wheel", onWheel, { passive: false });
+            return () => el.removeEventListener("wheel", onWheel);
         }
-    };
+    }, [isOpen]);
 
     const handleQuickAction = (action) => {
-        const userMessage = action;
-        setMessages(prev => [...prev, { role: "user", text: userMessage }]);
+        setMessages(prev => [...prev, { role: "user", text: action }]);
         setIsTyping(true);
         setTimeout(() => {
-            const botResponse = generateResponse(userMessage);
+            const botResponse = generateResponse(action);
             setMessages(prev => [...prev, { role: "bot", ...botResponse }]);
             setIsTyping(false);
         }, 800);
     };
 
     return (
-        <div className="fixed bottom-6 right-6 z-[9999] font-sans">
-            {/* Chat Bubble */}
-            {!isOpen && (
-                <button 
-                    onClick={() => setIsOpen(true)}
-                    className="group relative w-14 h-14 bg-gradient-to-tr from-primary to-orange-500 text-white rounded-full shadow-[0_8px_30px_rgb(255,165,0,0.4)] flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-500 overflow-hidden"
-                >
-                    {/* Animated background flare */}
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-                    
-                    <MessageCircle className="w-7 h-7 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
-                    
-                    {/* Pulsing online indicator */}
-                    <span className="absolute top-3 right-3 w-3 h-3 bg-green-500 rounded-full border-2 border-white shadow-sm">
-                        <span className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75"></span>
-                    </span>
-                </button>
-            )}
-
-            {/* Chat Window */}
-            {isOpen && (
-                <div className="w-[350px] md:w-[400px] h-[500px] md:h-[600px] bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 duration-300">
-                    
-                    {/* Header */}
-                    <div className="bg-gradient-to-r from-primary to-orange-600 p-5 flex items-center justify-between text-white">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md border border-white/30 shadow-inner">
-                                <Bot className="w-6 h-6" />
+        <div className="fixed bottom-8 right-8 z-[9999] font-sans">
+            <AnimatePresence>
+                {!isOpen ? (
+                    <motion.button 
+                        key="bubble"
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ 
+                            scale: 1, 
+                            opacity: 1,
+                            y: [0, -10, 0]
+                        }}
+                        transition={{
+                            y: {
+                                duration: 2,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            },
+                            scale: { duration: 0.2 },
+                            opacity: { duration: 0.2 }
+                        }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        onClick={() => setIsOpen(true)}
+                        className="w-14 h-14 bg-primary text-white rounded-2xl shadow-xl shadow-primary/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all group"
+                    >
+                        <MessageCircle className="w-7 h-7 group-hover:rotate-12 transition-transform" />
+                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-sm">
+                            <span className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75"></span>
+                        </span>
+                    </motion.button>
+                ) : (
+                    <motion.div 
+                        key="window"
+                        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                        className="w-[320px] md:w-[350px] h-[500px] md:h-[580px] glass shadow-2xl rounded-[2rem] flex flex-col overflow-hidden border border-white/20 relative"
+                    >
+                        {/* Header */}
+                        <div className="p-4 flex items-center justify-between bg-zinc-900/50 backdrop-blur-md border-b border-white/10 shrink-0 z-[110]">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 bg-primary/20 text-primary rounded-xl flex items-center justify-center border border-primary/30">
+                                    <Bot className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-sm leading-tight text-white">ByteBot AI</h3>
+                                    <p className="text-[9px] text-white/50 flex items-center gap-1 font-medium uppercase tracking-wider">
+                                        <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></span>
+                                        Online
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="font-bold text-lg leading-tight">ByteBot AI</h3>
-                                <p className="text-xs text-white/70 flex items-center gap-1">
-                                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                                    Online • Always here to help
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
-                                <Minus className="w-5 h-5" />
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}
+                                className="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-red-500/20 text-white/50 hover:text-red-500 rounded-lg transition-all"
+                            >
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
-                    </div>
 
-                    {/* Messages Area */}
-                    <div className="flex-grow overflow-y-auto p-4 space-y-4 bg-gray-50/50 dark:bg-gray-800/30">
-                        {messages.map((msg, idx) => (
-                            <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                                <div className={`max-w-[85%] p-3 rounded-2xl text-sm ${
-                                    msg.role === "user" 
-                                    ? "bg-primary text-white rounded-tr-none shadow-md shadow-primary/10" 
-                                    : "bg-white dark:bg-gray-800 text-foreground rounded-tl-none border border-gray-100 dark:border-gray-700 shadow-sm"
-                                }`}>
-                                    <p className="leading-relaxed">{msg.text}</p>
-                                    
-                                    {/* Product Suggestions */}
-                                    {msg.products && (
-                                        <div className="mt-3 space-y-2">
-                                            {msg.products.map(p => (
-                                                <div 
-                                                    key={p._id} 
-                                                    onClick={() => {
-                                                        router.push(`/product/${p._id}`);
-                                                        setIsOpen(false);
-                                                    }}
-                                                    className="flex items-center gap-3 p-2 bg-gray-50 dark:bg-gray-700 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors border border-gray-100 dark:border-gray-600"
-                                                >
-                                                    <div className="w-12 h-12 relative rounded-lg overflow-hidden shrink-0">
-                                                        <Image src={p.image[0]} alt={p.name} fill className="object-cover" />
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <p className="font-bold text-xs truncate">{p.name}</p>
-                                                        <p className="text-primary text-xs font-bold">{currency}{p.offerPrice || p.price}</p>
-                                                    </div>
-                                                </div>
-                                            ))}
+                        {/* Messages Area */}
+                        <div className="flex-grow overflow-y-auto px-6 space-y-6 pb-4 relative pt-6">
+                            {messages.map((msg, idx) => (
+                                <motion.div 
+                                    key={idx} 
+                                    initial={{ opacity: 0, x: msg.role === "user" ? 10 : -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                                >
+                                    <div className={`max-w-[85%] p-4 rounded-3xl text-sm leading-relaxed ${
+                                        msg.role === "user" 
+                                        ? "bg-primary text-white rounded-tr-none shadow-lg shadow-primary/10" 
+                                        : "glass-card rounded-tl-none border border-white/10"
+                                    }`}>
+                                        <p>{msg.text}</p>
+                                        
+                                        {msg.action && (
                                             <button 
                                                 onClick={() => {
-                                                    router.push('/all-products');
+                                                    router.push(msg.action.path);
                                                     setIsOpen(false);
                                                 }}
-                                                className="w-full text-center text-xs text-primary font-bold hover:underline py-1 mt-2 cursor-pointer"
+                                                className="mt-3 flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
                                             >
-                                                View all products
+                                                {msg.action.label}
+                                                <ArrowRight className="w-3 h-3" />
                                             </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                        {isTyping && (
-                            <div className="flex justify-start">
-                                <div className="bg-white dark:bg-gray-800 p-3 rounded-2xl rounded-tl-none border border-gray-100 dark:border-gray-700">
-                                    <div className="flex gap-1">
-                                        <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce"></div>
-                                        <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                                        <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                                        )}
+
+                                        {msg.products && (
+                                            <div className="mt-4 space-y-3">
+                                                {msg.products.map(p => (
+                                                    <div 
+                                                        key={p._id} 
+                                                        onClick={() => {
+                                                            router.push(`/product/${p._id}`);
+                                                            setIsOpen(false);
+                                                        }}
+                                                        className="flex items-center gap-3 p-2.5 bg-white/10 rounded-2xl cursor-pointer hover:bg-white/20 transition-all border border-white/5"
+                                                    >
+                                                        <div className="w-12 h-12 relative rounded-xl overflow-hidden shrink-0 bg-white">
+                                                            <Image src={p.image[0]} alt={p.name} fill className="object-contain p-1" />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="font-bold text-[11px] truncate">{p.name}</p>
+                                                            <p className="text-primary text-xs font-black">{currency}{p.offerPrice || p.price}</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                <button 
+                                                    onClick={() => {
+                                                        router.push('/all-products');
+                                                        setIsOpen(false);
+                                                    }}
+                                                    className="w-full text-center text-xs text-primary font-bold hover:underline pt-2"
+                                                >
+                                                    Explore all products →
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            ))}
+
+                            {isTyping && (
+                                <div className="flex justify-start">
+                                    <div className="glass-card p-4 rounded-3xl rounded-tl-none flex gap-1.5">
+                                        <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 0.6 }} className="w-1.5 h-1.5 bg-primary rounded-full"></motion.div>
+                                        <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-primary rounded-full"></motion.div>
+                                        <motion.div animate={{ scale: [1, 1.5, 1] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-primary rounded-full"></motion.div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                        <div ref={messagesEndRef} />
-                    </div>
-
-                    {/* Quick Actions */}
-                    <div 
-                        ref={quickActionsRef}
-                        onMouseDown={handleMouseDown}
-                        onMouseLeave={handleMouseLeave}
-                        onMouseUp={handleMouseUp}
-                        onMouseMove={handleMouseMove}
-                        onWheel={handleWheel}
-                        className={`px-4 py-4 flex gap-2 overflow-x-auto no-scrollbar whitespace-nowrap bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 shrink-0 select-none touch-pan-x overscroll-contain ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
-                    >
-                        {["Best Deals 🔥", "Earphones", "MacBook Pro", "Smartwatches", "Track Order", "Shipping Info", "Returns"].map(action => (
-                            <button 
-                                key={action}
-                                onClick={() => handleQuickAction(action)}
-                                className="flex items-center justify-center h-9 text-[10px] md:text-xs px-4 bg-gray-50 dark:bg-gray-800 hover:bg-primary hover:text-white rounded-xl transition-all border border-gray-200 dark:border-gray-700 font-medium shrink-0 shadow-sm active:scale-95"
-                            >
-                                {action}
-                            </button>
-                        ))}
-                        <div className="min-w-[20px] h-1 shrink-0"></div> {/* Spacer to prevent clipping at the end */}
-                    </div>
-
-                    {/* Input */}
-                    <form onSubmit={handleSend} className="p-4 bg-white dark:bg-gray-900 flex items-center gap-2 border-t border-gray-100 dark:border-gray-800 shrink-0">
-                        <div className="relative flex-grow">
-                            <input 
-                                type="text" 
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                placeholder="Ask ByteBot anything..."
-                                className="w-full pl-4 pr-10 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                            />
-                            <Smile className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 cursor-pointer hover:text-primary transition-colors" />
+                            )}
+                            <div ref={messagesEndRef} />
                         </div>
-                        <button 
-                            type="submit"
-                            disabled={!input.trim()}
-                            className="w-11 h-11 bg-gradient-to-tr from-primary to-orange-500 text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all shrink-0"
+
+                        {/* Quick Actions */}
+                        <div 
+                            ref={quickActionsRef}
+                            onMouseDown={handleMouseDown}
+                            onMouseLeave={handleMouseLeave}
+                            onMouseUp={handleMouseUp}
+                            onMouseMove={handleMouseMove}
+                            className="px-6 py-4 flex gap-2 overflow-x-auto no-scrollbar whitespace-nowrap bg-foreground/5 shrink-0 select-none cursor-grab active:cursor-grabbing"
                         >
-                            <Send className="w-5 h-5" />
-                        </button>
-                    </form>
-                </div>
-            )}
+                            {["Best Deals 🔥", "Earphones", "MacBook Pro", "Smartwatches", "Track Order", "Support"].map(action => (
+                                <button 
+                                    key={action}
+                                    onClick={() => handleQuickAction(action)}
+                                    className="h-10 px-4 glass text-xs font-bold rounded-2xl hover:bg-primary hover:text-white transition-all border border-white/10"
+                                >
+                                    {action}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Input Area */}
+                        <div className="p-6 bg-transparent">
+                            <form onSubmit={handleSend} className="relative flex items-center gap-3">
+                                <div className="relative flex-grow">
+                                    <input 
+                                        type="text" 
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        placeholder="Type your message..."
+                                        className="w-full pl-5 pr-10 py-3 bg-foreground/5 border border-white/10 rounded-2xl text-xs focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    />
+                                    <Smile className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/20 cursor-pointer hover:text-primary" />
+                                </div>
+                                <button 
+                                    type="submit"
+                                    disabled={!input.trim()}
+                                    className="w-11 h-11 bg-primary text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 disabled:opacity-30 disabled:scale-100 transition-all shrink-0"
+                                >
+                                    <Send className="w-5 h-5" />
+                                </button>
+                            </form>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
 
 export default ChatBot;
+

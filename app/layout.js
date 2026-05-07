@@ -5,8 +5,9 @@ import { AppContextProvider } from "@/context/AppContext";
 import { Toaster } from "react-hot-toast";
 import { ClerkProvider } from "@clerk/nextjs";
 import ChatBot from "@/components/ChatBot";
+import BackToTop from "@/components/BackToTop";
 
-const outfit = Outfit({ subsets: ['latin'], weight: ["300", "400", "500"] })
+const outfit = Outfit({ subsets: ['latin'], weight: ["300", "400", "500", "600", "700", "800", "900"] })
 
 export const metadata = {
   title: "ByteMart - SuperDev",
@@ -27,6 +28,7 @@ export default function RootLayout({ children }) {
             <Toaster />
             <AppContextProvider>
               <ChatBot />
+              <BackToTop />
               {children}
             </AppContextProvider>
           </ThemeProvider>

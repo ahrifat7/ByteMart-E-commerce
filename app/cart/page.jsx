@@ -5,6 +5,7 @@ import OrderSummary from "@/components/OrderSummary";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import { useAppContext } from "@/context/AppContext";
+import { motion } from "framer-motion";
 
 const Cart = () => {
 
@@ -13,7 +14,11 @@ const Cart = () => {
   return (
     <>
       <Navbar />
-      <div className="flex flex-col md:flex-row gap-10 px-6 md:px-16 lg:px-32 pt-14 mb-20">
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col md:flex-row gap-10 px-6 md:px-16 lg:px-32 pt-28 mb-20"
+      >
         <div className="flex-1">
           <div className="flex items-center justify-between mb-8 border-b border-gray-500/30 pb-6">
             <p className="text-2xl md:text-3xl text-gray-600 dark:text-gray-400">
@@ -112,7 +117,7 @@ const Cart = () => {
           </button>
         </div>
         <OrderSummary />
-      </div>
+      </motion.div>
     </>
   );
 };

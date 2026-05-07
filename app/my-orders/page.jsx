@@ -6,6 +6,8 @@ import { useAppContext } from "@/context/AppContext";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import Loading from "@/components/Loading";
+import { motion } from "framer-motion";
+import { Package, MapPin, CreditCard, Calendar } from "lucide-react";
 
 const MyOrders = () => {
 
@@ -26,52 +28,65 @@ const MyOrders = () => {
     return (
         <>
             <Navbar />
-            <div className="flex flex-col justify-between px-6 md:px-16 lg:px-32 py-6 min-h-screen">
-                <div className="space-y-5">
-                    <h2 className="text-lg font-medium mt-6">My Orders</h2>
-                    {loading ? <Loading /> : (<div className="max-w-5xl border-t border-gray-300 text-sm">
-                        {orders.map((order, index) => (
-                            <div key={index} className="flex flex-col md:flex-row gap-5 justify-between p-5 border-b border-gray-300">
-                                <div className="flex-1 flex gap-5 max-w-80">
-                                    <Image
-                                        className="max-w-16 max-h-16 object-cover"
-                                        src={assets.box_icon}
-                                        alt="box_icon"
-                                    />
-                                    <p className="flex flex-col gap-3">
-                                        <span className="font-medium text-base">
-                                            {order.items.map((item) => item.product.name + ` x ${item.quantity}`).join(", ")}
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex flex-col justify-between px-6 md:px-16 lg:px-32 pt-28 pb-10 min-h-screen"
+            >
+                <div className="space-y-8">
+                    <div>
+                        <h1 className="text-3xl font-extrabold text-foreground">My Orders</h1>
+                        <p className="text-foreground/50 mt-1">Track and manage your recent purchases</p>
+                    </div>
+
+                    {loading ? <Loading /> : (
+                        <div className="space-y-4">
+                            {orders.map((order, index) => (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.05 }}
+                                    className="flex flex-col md:flex-row gap-6 justify-between p-6 rounded-2xl border border-border bg-card hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all"
+                                >
+                                    <div className="flex-1 flex gap-4 items-start">
+                                        <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
+                                            <Package className="w-6 h-6 text-primary" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-bold text-foreground text-sm leading-relaxed">
+                                                {order.items.map((item) => item.product.name + ` x ${item.quantity}`).join(", ")}
+                                            </p>
+                                            <p className="text-xs text-foreground/40 mt-1">{order.items.length} item(s)</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-x-8 gap-y-4 items-center text-sm">
+                                        <div className="flex items-center gap-2 text-foreground/60">
+                                            <MapPin className="w-4 h-4 text-foreground/30" />
+                                            <span>{order.address.city}, {order.address.state}</span>
+                                        </div>
+                                        
+                                        <p className="text-lg font-extrabold text-primary">{currency}{order.amount}</p>
+
+                                        <div className="flex items-center gap-2 text-foreground/60">
+                                            <Calendar className="w-4 h-4 text-foreground/30" />
+                                            <span>{new Date(order.date).toLocaleDateString()}</span>
+                                        </div>
+
+                                        <span className="px-3 py-1 text-xs font-bold rounded-full bg-amber-500/10 text-amber-600">
+                                            Pending
                                         </span>
-                                        <span>Items : {order.items.length}</span>
-                                    </p>
-                                </div>
-                                <div>
-                                    <p>
-                                        <span className="font-medium">{order.address.fullName}</span>
-                                        <br />
-                                        <span >{order.address.area}</span>
-                                        <br />
-                                        <span>{`${order.address.city}, ${order.address.state}`}</span>
-                                        <br />
-                                        <span>{order.address.phoneNumber}</span>
-                                    </p>
-                                </div>
-                                <p className="font-medium my-auto">{currency}{order.amount}</p>
-                                <div>
-                                    <p className="flex flex-col">
-                                        <span>Method : COD</span>
-                                        <span>Date : {new Date(order.date).toLocaleDateString()}</span>
-                                        <span>Payment : Pending</span>
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>)}
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
                 </div>
-            </div>
+            </motion.div>
             <Footer />
         </>
     );
 };
 
-export default MyOrders;
+export default MyOrders;

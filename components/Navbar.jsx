@@ -1,106 +1,228 @@
 "use client"
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { assets, BagIcon, BoxIcon, CartIcon, HomeIcon} from "@/assets/assets";
 import Link from "next/link"
 import { useAppContext } from "@/context/AppContext";
 import Image from "next/image";
 import { useClerk, UserButton } from "@clerk/nextjs";
 import { ThemeToggle } from "./ThemeToggle";
+import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
+import { Menu, X, ShoppingCart } from "lucide-react";
 
 const Navbar = () => {
+  const { isSeller, router, user, getCartCount } = useAppContext();
+  const { openSignIn } = useClerk();
+  const pathname = usePathname();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const { isSeller, router, user } = useAppContext();
-  const {openSignIn} = useClerk()
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  const navLinks = [
+    { name: "Home", path: "/" },
+    { name: "Shop", path: "/all-products" },
+    { name: "Deals", path: "/deals" },
+    { name: "About", path: "/about-us" },
+    { name: "Contact", path: "/contact-us" },
+  ];
 
   return (
-    <nav className="flex items-center justify-between px-6 md:px-16 lg:px-32 py-3 border-b border-gray-300 dark:border-gray-700 bg-background text-foreground transition-colors">
-      <div onClick={() => router.push('/')} className="cursor-pointer">
-        <Image
-          src={assets.logo}
-          alt="logo"
-          className="w-28 md:w-32 dark:hidden transition-all"
-        />
-        <Image
-          src={assets.logo_dark}
-          alt="logo"
-          className="w-28 md:w-32 hidden dark:block transition-all"
-        />
-      </div>
-      <div className="flex items-center gap-4 lg:gap-8 max-md:hidden">
-        <Link href="/" className="hover:text-primary transition">
-          Home
-        </Link>
-        <Link href="/all-products" className="hover:text-primary transition">
-          Shop
-        </Link>
-        <Link href="/about-us" className="hover:text-primary transition">
-          About Us
-        </Link>
-        <Link href="/contact-us" className="hover:text-primary transition">
-          Contact
-        </Link>
+    <>
+      <motion.nav 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-16 lg:px-32 py-4 transition-all duration-300 ${
+          isScrolled ? "glass shadow-lg py-3" : "bg-background/80 backdrop-blur-sm"
+        }`}
+      >
+        <div onClick={() => router.push('/')} className="cursor-pointer relative group">
+          <Image
+            src={assets.logo}
+            alt="logo"
+            className="w-28 md:w-32 dark:hidden transition-transform duration-300 group-hover:scale-105"
+          />
+          <Image
+            src={assets.logo_dark}
+            alt="logo"
+            className="w-28 md:w-32 hidden dark:block transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
 
-        {isSeller && <button onClick={() => router.push('/seller')} className="text-xs border dark:border-gray-600 px-4 py-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">Seller Dashboard</button>}
+        {/* Desktop Nav */}
+        <div className="flex items-center gap-6 lg:gap-10 max-md:hidden">
+          {navLinks.map((link) => (
+            <Link 
+              key={link.path} 
+              href={link.path} 
+              className={`relative text-sm font-medium transition-colors hover:text-primary ${
+                pathname === link.path ? "text-primary" : "text-foreground/80"
+              }`}
+            >
+              {link.name}
+              {pathname === link.path && (
+                <motion.div 
+                  layoutId="nav-underline"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary"
+                />
+              )}
+            </Link>
+          ))}
 
-      </div>
+          {isSeller && (
+            <button 
+              onClick={() => router.push('/seller')} 
+              className="text-xs font-semibold bg-primary text-white px-4 py-2 rounded-full hover:bg-primary/90 transition-all shadow-md hover:shadow-lg active:scale-95"
+            >
+              Seller Dashboard
+            </button>
+          )}
+        </div>
 
-      <ul className="hidden md:flex items-center gap-4 ">
-        <ThemeToggle />
+        {/* Right Side */}
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          
+          {/* Cart Icon */}
+          <button 
+            onClick={() => router.push('/cart')}
+            className="relative p-2 hover:bg-foreground/5 rounded-xl transition-colors"
+          >
+            <ShoppingCart className="w-5 h-5 text-foreground/70" />
+            {getCartCount() > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                {getCartCount()}
+              </span>
+            )}
+          </button>
+          
+          {/* Desktop User */}
+          <div className="hidden md:block">
+            {user ? (
+              <UserButton afterSignOutUrl="/">
+                <UserButton.MenuItems>
+                  <UserButton.Action label="Home" labelIcon={<HomeIcon/>} onClick={() => router.push("/")} />
+                  <UserButton.Action label="Products" labelIcon={<BoxIcon/>} onClick={() => router.push("/all-products")} />
+                  <UserButton.Action label="Cart" labelIcon={<CartIcon/>} onClick={() => router.push("/cart")} />
+                  <UserButton.Action label="My Orders" labelIcon={<BagIcon/>} onClick={() => router.push("/my-orders")} />
+                </UserButton.MenuItems>
+              </UserButton>
+            ) : (
+              <button 
+                onClick={openSignIn} 
+                className="flex items-center gap-2 text-sm font-medium hover:text-primary transition-colors group"
+              >
+                <Image className="dark:invert group-hover:scale-110 transition-transform" src={assets.user_icon} alt="user icon" />
+                <span>Login</span>
+              </button>
+            )}
+          </div>
 
-        { 
-        user 
-          ? 
+          {/* Mobile Hamburger */}
+          <button 
+            onClick={() => setMobileOpen(!mobileOpen)} 
+            className="md:hidden p-2 hover:bg-foreground/5 rounded-xl transition-colors"
+          >
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+      </motion.nav>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
           <>
-          <UserButton>
-            <UserButton.MenuItems>
-              <UserButton.Action label="Home" labelIcon={<HomeIcon/>} onClick={() => router.push("/")} />
-            </UserButton.MenuItems>
-            <UserButton.MenuItems>
-              <UserButton.Action label="Products" labelIcon={<BoxIcon/>} onClick={() => router.push("/all-products")} />
-            </UserButton.MenuItems>
-            <UserButton.MenuItems>
-              <UserButton.Action label="Cart" labelIcon={<CartIcon/>} onClick={() => router.push("/cart")} />
-            </UserButton.MenuItems>
-            <UserButton.MenuItems>
-              <UserButton.Action label="My Orders" labelIcon={<BagIcon/>} onClick={() => router.push("/my-orders")} />
-            </UserButton.MenuItems>
-          </UserButton>
-          </> 
-          : <button onClick={openSignIn} className="flex items-center gap-2 hover:text-gray-900 transition">
-          <Image className="dark:invert" src={assets.user_icon} alt="user icon" />
-          Account
-        </button> }
-      </ul>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] md:hidden"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="fixed top-0 right-0 bottom-0 w-[280px] sm:w-72 bg-background border-l border-border z-[70] md:hidden flex flex-col shadow-2xl"
+            >
+              <div className="p-6 flex items-center justify-between border-b border-border">
+                <span className="font-bold text-lg">Menu</span>
+                <button onClick={() => setMobileOpen(false)} className="p-2 hover:bg-foreground/5 rounded-xl">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-      <div className="flex items-center md:hidden gap-3">
-        <ThemeToggle />
-        {isSeller && <button onClick={() => router.push('/seller')} className="text-xs border px-4 py-1.5 rounded-full">Seller Dashboard</button>}
-        { 
-        user 
-          ? 
-          <>
-          <UserButton>
-            <UserButton.MenuItems>
-              <UserButton.Action label="Home" labelIcon={<HomeIcon/>} onClick={() => router.push("/")} />
-            </UserButton.MenuItems>
-            <UserButton.MenuItems>
-              <UserButton.Action label="Products" labelIcon={<BoxIcon/>} onClick={() => router.push("/all-products")} />
-            </UserButton.MenuItems>
-            <UserButton.MenuItems>
-              <UserButton.Action label="Cart" labelIcon={<CartIcon/>} onClick={() => router.push("/cart")} />
-            </UserButton.MenuItems>
-            <UserButton.MenuItems>
-              <UserButton.Action label="My Orders" labelIcon={<BagIcon/>} onClick={() => router.push("/my-orders")} />
-            </UserButton.MenuItems>
-          </UserButton>
-          </> 
-          : <button onClick={openSignIn} className="flex items-center gap-2 hover:text-gray-900 transition">
-          <Image className="dark:invert" src={assets.user_icon} alt="user icon" />
-          Account
-        </button> }
-      </div>
-    </nav>
+              <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
+                {navLinks.map((link, i) => (
+                  <motion.div
+                    key={link.path}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                  >
+                    <Link
+                      href={link.path}
+                      className={`block px-4 py-3 rounded-xl font-medium transition-all ${
+                        pathname === link.path 
+                          ? "bg-primary/10 text-primary" 
+                          : "text-foreground/70 hover:bg-foreground/5"
+                      }`}
+                    >
+                      {link.name}
+                    </Link>
+                  </motion.div>
+                ))}
+
+                {isSeller && (
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 }}
+                  >
+                    <button 
+                      onClick={() => { router.push('/seller'); setMobileOpen(false); }}
+                      className="w-full px-4 py-3 bg-primary text-white rounded-xl font-bold text-sm mt-4"
+                    >
+                      Seller Dashboard
+                    </button>
+                  </motion.div>
+                )}
+              </nav>
+
+              <div className="p-6 border-t border-border">
+                {user ? (
+                  <div className="flex items-center gap-3">
+                    <UserButton afterSignOutUrl="/" />
+                    <span className="text-sm font-medium text-foreground/70">Account</span>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => { openSignIn(); setMobileOpen(false); }}
+                    className="w-full py-3 bg-foreground text-background rounded-xl font-bold text-sm"
+                  >
+                    Sign In
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
 export default Navbar;
+

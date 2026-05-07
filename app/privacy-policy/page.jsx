@@ -6,7 +6,7 @@ const PrivacyPolicy = () => {
   return (
     <>
       <Navbar />
-      <div className="flex flex-col items-center px-6 md:px-16 lg:px-32 py-16 bg-background">
+      <div className="flex flex-col items-center px-6 md:px-16 lg:px-32 pt-28 pb-16 bg-background">
         <div className="w-full max-w-4xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-8 md:p-12 rounded-3xl shadow-lg border border-gray-200 dark:border-gray-700">
           <div className="text-center mb-10">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Privacy Policy</h1>

@@ -7,6 +7,7 @@ import { useAppContext } from "@/context/AppContext";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import { FaFilter, FaSearch, FaTimes, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 const AllProducts = () => {
     const { products } = useAppContext();
@@ -99,7 +100,11 @@ const AllProducts = () => {
         <div className="flex flex-col min-h-screen bg-background">
             <Navbar />
             
-            <main className="flex-grow max-w-7xl mx-auto w-full px-6 md:px-10 lg:px-16 py-10">
+            <motion.main 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex-grow max-w-7xl mx-auto w-full px-6 md:px-10 lg:px-16 pt-24 pb-10"
+            >
                 
                 {/* Header & Search */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
@@ -267,7 +272,7 @@ const AllProducts = () => {
                         )}
                     </div>
                 </div>
-            </main>
+            </motion.main>
 
             <Footer />
         </div>
