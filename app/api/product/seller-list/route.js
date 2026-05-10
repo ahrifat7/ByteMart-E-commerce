@@ -1,19 +1,21 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getAuth } from "@clerk/nextjs/server";
 import authSeller from "@/lib/authSeller";
 import Product from "@/models/Product";
 import connectDB from "@/config/db";
 
 export async function GET(request) {
     try {
-        const { userId } = await auth();
+        const { userId } = getAuth(request);
 
-        if (!userId || !(await authSeller(userId))) {
+        const isSeller = authSeller(userId)
+
+        if (!isSeller) {
             return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
         }
 
         await connectDB();
-        const products = await Product.find({ userId });
+        const products = await Product.find({});
 
         return NextResponse.json({ success: true, products });
 

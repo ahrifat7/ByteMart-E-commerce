@@ -6,11 +6,12 @@ import Image from "next/image";
 import { useState } from "react";
 import { useAppContext } from "@/context/AppContext";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 
 const AddAddress = () => {
 
-    const { router } = useAppContext();
+    const { getToken, router } = useAppContext();
 
     const [address, setAddress] = useState({
         fullName: '',
@@ -24,25 +25,20 @@ const AddAddress = () => {
     const onSubmitHandler = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('/api/user/add-address', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ address })
-            });
+  const token = await getToken()
 
-            const data = await response.json();
+  const { data } = await axios.post('/api/user/add-address', { address }, { headers: { Authorization: `Bearer ${token}` } })
 
-            if (data.success) {
-                toast.success(data.message);
-                router.push('/cart');
-            } else {
-                toast.error(data.message);
-            }
-        } catch (error) {
-            toast.error(error.message);
-        }
+  if (data.success) {
+    toast.success(data.message)
+    router.push('/cart')
+  } else {
+    toast.error(data.message)
+  }
+  
+} catch (error) {
+  toast.error(error.message)
+}
     }
 
     return (

@@ -2,8 +2,13 @@
 import React, { useState } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
+import { useAppContext } from "@/context/AppContext";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const AddProduct = () => {
+
+  const { getToken } = useAppContext()
 
   const [files, setFiles] = useState([]);
   const [name, setName] = useState('');
@@ -11,6 +16,7 @@ const AddProduct = () => {
   const [category, setCategory] = useState('Earphone');
   const [price, setPrice] = useState('');
   const [offerPrice, setOfferPrice] = useState('');
+  const [brand, setBrand] = useState('');
 
   const [loading, setLoading] = useState(false);
 
@@ -18,44 +24,43 @@ const AddProduct = () => {
     e.preventDefault();
     setLoading(true);
 
-    try {
       const formData = new FormData();
+
       formData.append('name', name);
       formData.append('description', description);
       formData.append('category', category);
       formData.append('price', price);
       formData.append('offerPrice', offerPrice);
+      formData.append('brand', brand);
 
-      files.forEach((file, index) => {
-        if (file) {
-          formData.append(`image${index}`, file);
-        }
-      });
+      for (let i = 0; i < files.length; i++) {
+  formData.append('images', files[i]);
+}
 
-      const response = await fetch('/api/product/add', {
-        method: 'POST',
-        body: formData,
-      });
+try {
+  const token = await getToken();
 
-      const data = await response.json();
+  const { data } = await axios.post('/api/product/add', formData, {headers: {Authorization: `Bearer ${token}`}});
 
-      if (data.success) {
-        // Reset form
-        setName('');
-        setDescription('');
-        setPrice('');
-        setOfferPrice('');
-        setFiles([]);
-        alert("Product added successfully!");
-      } else {
-        alert(data.message);
-      }
-    } catch (error) {
-      alert("An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
+  if(data.success){
+    toast.success(data.message);
+    setFiles([]);
+    setName('');
+    setDescription('');
+    setCategory('Earphone');
+    setPrice('');
+    setOfferPrice('');
+    setBrand('');
+  }else{
+    toast.error(data.message);
+  }
+
+  } catch (error) {
+    toast.error(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="flex-1 min-h-screen flex flex-col justify-between">
@@ -132,7 +137,7 @@ const AddProduct = () => {
               id="category"
               className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40 bg-transparent dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-primary transition-colors"
               onChange={(e) => setCategory(e.target.value)}
-              defaultValue={category}
+              value={category}
             >
               <option value="Earphone">Earphone</option>
               <option value="Headphone">Headphone</option>
@@ -141,6 +146,11 @@ const AddProduct = () => {
               <option value="Laptop">Laptop</option>
               <option value="Camera">Camera</option>
               <option value="Accessories">Accessories</option>
+              <option value="Console">Console</option>
+              <option value="Mouse">Mouse</option>
+              <option value="Keyboard">Keyboard</option>
+              <option value="Speaker">Speaker</option>
+              <option value="Desktop">Desktop</option>
             </select>
           </div>
           <div className="flex flex-col gap-1 w-32">
@@ -168,6 +178,20 @@ const AddProduct = () => {
               className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40 bg-transparent dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-primary transition-colors"
               onChange={(e) => setOfferPrice(e.target.value)}
               value={offerPrice}
+              required
+            />
+          </div>
+          <div className="flex flex-col gap-1 w-32">
+            <label className="text-base font-medium" htmlFor="brand">
+              Brand
+            </label>
+            <input
+              id="brand"
+              type="text"
+              placeholder="Type here"
+              className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-500/40 bg-transparent dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-primary transition-colors"
+              onChange={(e) => setBrand(e.target.value)}
+              value={brand}
               required
             />
           </div>

@@ -18,7 +18,7 @@ export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className={`${outfit.className} antialiased bg-background text-foreground transition-colors duration-300`} >
+        <body className={`${outfit.className} antialiased bg-background text-foreground transition-colors duration-300`} suppressHydrationWarning>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"

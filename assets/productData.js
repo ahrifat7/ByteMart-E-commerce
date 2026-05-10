@@ -161,4 +161,20 @@ export const products = [
     price: "$229.99",
     imgSrc: assets.sony_airbuds_image,
   },
+  {
+    id: 21,
+    name: "Intel Core Ultra 9 285K Gaming PC",
+    description: `• Intel® Core™ Ultra 9 285K Processor
+• ASUS ROG MAXIMUS Z890 HERO BTF LGA1851 ATX Motherboard
+• 4 x Kingston FURY Beast 32GB DDR5 6000MHz CL30 RGB Desktop RAM
+• ASUS ROG Astral GeForce RTX 5090 32GB GDDR7 OC Edition Graphics Card
+• Team T - FORCE GE PRO 2TB M.2 PCIe Gen 5 NVMe SSD with AirFlow
+• Asus ROG Strix XG27ACG 27" 180Hz Fast IPS WQHD Gaming Monitor
+• Asus ROG Hyperion GR701 BTF Edition ARGB E - ATX Mid - Tower Gaming Casing
+• ASUS TUF Gaming 1200G 1200W 80 Plus Gold Full Modular Power Supply
+• Asus ROG STRIX LC III 360 ARGB All -in -One Liquid CPU Cooler`,
+    rating: 4.9,
+    price: "$8999.99",
+    imgSrc: assets.gaming_pc_image1,
+  }
 ];

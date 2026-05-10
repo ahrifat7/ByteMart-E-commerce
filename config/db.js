@@ -13,8 +13,9 @@ async function connectDB() {
     if (!cached.promise) {
         const opts = {
             bufferCommands: false,
+            dbName: 'bytemart',
         }
-        cached.promise = mongoose.connect(`${process.env.MONGODB_URI}/bytemart`, opts).then(mongoose => {
+        cached.promise = mongoose.connect(process.env.MONGODB_URI, opts).then(mongoose => {
             return mongoose
         })
     }
