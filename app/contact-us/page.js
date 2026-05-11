@@ -1,11 +1,22 @@
 "use client";
-import React from "react";
-import { motion } from "framer-motion";
-import { Mail, Phone, MapPin, Send, MessageSquare, Clock, Globe } from "lucide-react";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mail, Phone, MapPin, Send, MessageSquare, Clock, Globe, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 
+const WEB3FORMS_ACCESS_KEY = "92cfcf9e-8ad7-44e9-9fa6-d4092bd685ad";
+
 const ContactUs = () => {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null); // "success" | "error" | null
+
   const contactInfo = [
     {
       icon: <Phone className="w-6 h-6 text-primary" />,
@@ -27,9 +38,44 @@ const ContactUs = () => {
     },
   ];
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("Message sent successfully!");
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_ACCESS_KEY,
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          message: formData.message,
+          subject: `New Contact Form Submission from ${formData.firstName} ${formData.lastName}`,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSubmitStatus("success");
+        setFormData({ firstName: "", lastName: "", email: "", message: "" });
+      } else {
+        setSubmitStatus("error");
+      }
+    } catch (error) {
+      console.error("Web3Forms submission error:", error);
+      setSubmitStatus("error");
+    } finally {
+      setIsSubmitting(false);
+      // Auto-dismiss the status message after 5 seconds
+      setTimeout(() => setSubmitStatus(null), 5000);
+    }
   };
 
   return (
@@ -121,11 +167,40 @@ const ContactUs = () => {
               transition={{ delay: 0.3 }}
             >
               <form onSubmit={handleSubmit} className="glass-card p-8 md:p-10 rounded-3xl space-y-6">
+                {/* Status Messages */}
+                <AnimatePresence>
+                  {submitStatus === "success" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="flex items-center gap-3 p-4 rounded-2xl bg-green-500/10 border border-green-500/30 text-green-400"
+                    >
+                      <CheckCircle className="w-5 h-5 shrink-0" />
+                      <p className="text-sm font-medium">Message sent successfully! We'll get back to you soon.</p>
+                    </motion.div>
+                  )}
+                  {submitStatus === "error" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="flex items-center gap-3 p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400"
+                    >
+                      <XCircle className="w-5 h-5 shrink-0" />
+                      <p className="text-sm font-medium">Something went wrong. Please try again later.</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-semibold ml-1">First Name</label>
                     <input
                       type="text"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
                       placeholder="John"
                       className="w-full px-5 py-4 rounded-2xl bg-background border border-border focus:border-primary outline-none transition-all"
                       required
@@ -135,6 +210,9 @@ const ContactUs = () => {
                     <label className="text-sm font-semibold ml-1">Last Name</label>
                     <input
                       type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
                       placeholder="Doe"
                       className="w-full px-5 py-4 rounded-2xl bg-background border border-border focus:border-primary outline-none transition-all"
                       required
@@ -146,6 +224,9 @@ const ContactUs = () => {
                   <label className="text-sm font-semibold ml-1">Email Address</label>
                   <input
                     type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     placeholder="john@example.com"
                     className="w-full px-5 py-4 rounded-2xl bg-background border border-border focus:border-primary outline-none transition-all"
                     required
@@ -155,6 +236,9 @@ const ContactUs = () => {
                 <div className="space-y-2">
                   <label className="text-sm font-semibold ml-1">Message</label>
                   <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
                     placeholder="How can we help you?"
                     rows={5}
                     className="w-full px-5 py-4 rounded-2xl bg-background border border-border focus:border-primary outline-none transition-all resize-none"
@@ -164,10 +248,20 @@ const ContactUs = () => {
 
                 <button
                   type="submit"
-                  className="w-full py-5 bg-primary text-white rounded-2xl font-bold text-lg hover:bg-primary/90 transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-3 group"
+                  disabled={isSubmitting}
+                  className="w-full py-5 bg-primary text-white rounded-2xl font-bold text-lg hover:bg-primary/90 transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-3 group disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100"
                 >
-                  Send Message
-                  <Send className="w-5 h-5 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                  {isSubmitting ? (
+                    <>
+                      Sending...
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    </>
+                  ) : (
+                    <>
+                      Send Message
+                      <Send className="w-5 h-5 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+                    </>
+                  )}
                 </button>
               </form>
             </motion.div>

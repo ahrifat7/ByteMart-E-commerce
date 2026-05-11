@@ -57,7 +57,7 @@ const Banner = () => {
           </div>
           
           <button
-            onClick={() => router.push('/product/67a1f5ef3f34a77b6dde9150')}
+            onClick={() => router.push('/product/6a0020c0282bb0bc8ad8f6be')}
             className="group inline-flex items-center gap-3 px-8 py-3.5 md:py-4 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 active:scale-95 transition-all"
           >
             Shop Now
