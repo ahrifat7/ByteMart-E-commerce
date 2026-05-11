@@ -8,22 +8,40 @@ import Navbar from "@/components/Navbar";
 import Loading from "@/components/Loading";
 import { motion } from "framer-motion";
 import { Package, MapPin, CreditCard, Calendar } from "lucide-react";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const MyOrders = () => {
 
-    const { currency } = useAppContext();
+    const { currency, getToken, user } = useAppContext();
 
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const fetchOrders = async () => {
-        setOrders(orderDummyData)
-        setLoading(false);
+  try {
+    const token = await getToken()
+
+    const {data} = await axios.get('/api/order/list', {headers:{Authorization:`Bearer ${token}`}})
+
+    if (data.success) {
+      setOrders(data.orders.reverse())
+      setLoading(false)
+    }else {
+      toast.error(data.message)
     }
+  } catch (error) {
+    toast.error(error.message)
+  }
+}
 
     useEffect(() => {
-        fetchOrders();
-    }, []);
+        if (user) {
+            fetchOrders();
+        } else if (user === null) {
+            toast.error("Please login to view your orders");
+        }
+    }, [user]);
 
     return (
         <>
@@ -89,4 +107,4 @@ const MyOrders = () => {
     );
 };
 
-export default MyOrders;
+export default MyOrders;

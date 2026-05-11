@@ -4,7 +4,7 @@ const orderSchema = new mongoose.Schema({
     userId: {
         type: String,
         required: true,
-        ref: "user",
+        ref: "User",
     },
 
     items: [
@@ -12,7 +12,7 @@ const orderSchema = new mongoose.Schema({
             product: {
                 type: String,
                 required: true,
-                ref: "product",
+                ref: "Product",
             },
             quantity: {
                 type: Number,
@@ -28,7 +28,7 @@ const orderSchema = new mongoose.Schema({
 
     address: {
         type: String,
-        ref: "address",
+        ref: "Address",
         required: true,
     },
 
@@ -45,6 +45,6 @@ const orderSchema = new mongoose.Schema({
 });
 
 const Order =
-    mongoose.models.order || mongoose.model("order", orderSchema);
+    mongoose.models.Order || mongoose.model("Order", orderSchema);
 
 export default Order;
