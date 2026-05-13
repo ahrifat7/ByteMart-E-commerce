@@ -14,6 +14,6 @@ export async function POST(request) {
         return NextResponse.json({ success: true, message: "Address added successfully", newAddress })
 
     } catch (error) {
-        return NextResponse.json({ success: false, message: error.message });
+        return NextResponse.json({ success: false, message: "Please Login to Add Address" });
     }
 }

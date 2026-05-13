@@ -11,21 +11,21 @@ const products = [
     image: assets.girl_with_headphone_image,
     title: "Unparalleled Sound",
     description: "Experience crystal-clear audio with premium headphones.",
-    productId: "67a1f52e3f34a77b6dde914a",
+    productId: "69ff480e697b4a45908d1e16",
   },
   {
     id: 2,
     image: assets.girl_with_earphone_image,
     title: "Stay Connected",
     description: "Compact and stylish earphones for every occasion.",
-    productId: "67a1f4e43f34a77b6dde9144",
+    productId: "69ff4644697b4a45908d1e15",
   },
   {
     id: 3,
     image: assets.boy_with_laptop_image,
     title: "Power in Every Pixel",
     description: "Shop the latest laptops for work, gaming, and more.",
-    productId: "67a1f7c93f34a77b6dde915a",
+    productId: "6a000c00282bb0bc8ad8f6b0",
   },
 ];
 
